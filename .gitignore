@@ -48,3 +48,8 @@ OpenGLTutorials-build-Visual2017-64bits/external/glfw-3.1.2/src/glfw_config.h
 misc05_picking/misc05_picking_BulletPhysics.exe
 misc05_picking/misc05_picking_custom.exe
 misc05_picking/misc05_picking_slow_easy.exe
+*.o
+*.~cp
+*.~hp
+*.exe
+*.opendb
