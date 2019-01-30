@@ -51,7 +51,7 @@ int main( void )
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	GLuint programID = LoadShaders("SimpleVertexShader.vs", "SimpleFragmentShader.fs");
+	GLuint programID = LoadShaders("SimpleVertexShader.vert", "SimpleFragmentShader.frag");
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
