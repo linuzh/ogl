@@ -50,6 +50,7 @@ int main( void )
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	printf("%s\n", glGetString(GL_VERSION));
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vert", "SimpleFragmentShader.frag");
 
@@ -184,6 +185,7 @@ int main( void )
 		glUseProgram(programID);
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][1]);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
