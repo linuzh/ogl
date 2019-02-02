@@ -31,7 +31,7 @@ int main( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 640, 400, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
+	window = glfwCreateWindow( 400, 400, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -185,7 +185,7 @@ int main( void )
 		glUseProgram(programID);
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][1]);
+		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][1]);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
