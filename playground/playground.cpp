@@ -31,7 +31,7 @@ int main( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 400, 400, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
+	window = glfwCreateWindow( 1024, 768, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -58,33 +58,45 @@ int main( void )
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	glm::mat4 myMatrix = glm::translate(glm::mat4(), glm::vec3(10.0f, 0.0f, 0.0f));
-	glm::vec4 myVector(10.0f, 10.0f, 10.0f, 0.0f);
-	glm::vec4 transformedVector = myMatrix * myVector;
-	glm::mat4 myIdentityMatrix = glm::mat4(1.0f);
-	glm::mat4 myScalingMatrix = glm::scale(glm::vec3(1.5f, 1.5f, 1.5f));
+	//glm::mat4 myMatrix = glm::translate(glm::mat4(), glm::vec3(10.0f, 0.0f, 0.0f));
+	//glm::vec4 myVector(10.0f, 10.0f, 10.0f, 0.0f);
+	//glm::vec4 transformedVector = myMatrix * myVector;
+	//glm::mat4 myIdentityMatrix = glm::mat4(1.0f);
 	//glm::mat4 myScaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
-	glm::vec3 myRotationAxis(0.0f, -1.0f, 0.0f);
 	//glm::rotate(glm::radians(45.0), myRotationAxis);
-	glm::mat4 rotationMatrix = glm::mat4(1.0f);
+	//glm::mat4 rotationMatrix = glm::mat4(1.0f);
 	//glm::mat4 myRotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	//glm::mat4 ViewMatrix = glm::translate(glm::mat4(), glm::vec3(-0.5f, 0.0f, 0.0f));
 	
+
+	glm::vec3 myRotationAxis(0.0f, -1.0f, 0.0f);
+
+	glm::mat4 myScalingMatrix = glm::scale(glm::vec3(1.5f, 1.5f, 1.5f));
 	glm::mat4 modelRotationMatrix = glm::rotate(glm::radians(45.0f), myRotationAxis);
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	glm::mat4 trScale = glm::scale(glm::vec3(2.5f, 2.5f, 0.0f));
+	glm::mat4 trRotate = glm::rotate(glm::radians(45.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	
-	glm::vec3 cameraPosition(4.0f, 3.0f, -3.0f);
+	glm::vec3 cameraPosition(4.0f, 3.0f, -6.0f);
 	glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
 	glm::vec3 upVector(0.0f, 1.0f, 0.0f);
 	
 	glm::mat4 cameraMatrix = glm::lookAt(cameraPosition, cameraTarget, upVector);
-	//glm::mat4 projectionMatrix = glm::perspective(glm::radians(49.0f), 19.0f / 10.0f, 0.1f, 100.0f);
-	glm::mat4 projectionMatrix = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 100.0f);
+	
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(49.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	//glm::mat4 projectionMatrix = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 100.0f);
+	
 	glm::mat4 MVP = projectionMatrix * cameraMatrix * modelMatrix * modelRotationMatrix * myScalingMatrix;
-
+	glm::mat4 trMVP = projectionMatrix * cameraMatrix * trTranslate * trRotate * trScale;
+	//glm::mat4 trMVP = projectionMatrix * cameraMatrix * modelMatrix * modelRotationMatrix * myScalingMatrix;
+	
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	
 	static const GLfloat g_vertex_buffer_data[] = {
+//		-1.0f, -1.0f, 1.1f,
+//		0.0f, 1.5f, 1.1f,
+//		1.0f, -1.0f, 1.1f,
 		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
 	-1.0f,-1.0f, 1.0f,
 	-1.0f, 1.0f, 1.0f, // triangle 1 : end
@@ -121,9 +133,19 @@ int main( void )
 	1.0f, 1.0f, 1.0f,
 	-1.0f, 1.0f, 1.0f,
 	1.0f,-1.0f, 1.0f,
+	//-1.0f, -1.0f, 0.0f, // tr
+	//0.0f, 1.0f, 0.0f,
+	//1.0f, -1.0f, 0.0f,
 	};
 
-	static const GLfloat g_color_buffer_data[] = {
+	static GLfloat g_color_buffer_data[12 * 3 * 3];
+	for (int v = 0; v < 12 * 3; v++) {
+		g_color_buffer_data[3 * v + 0] = 0.15f;
+		g_color_buffer_data[3 * v + 1] = 0.15f;
+		g_color_buffer_data[3 * v + 2] = 0.15f;
+	}
+
+	static const GLfloat zaloha_g_color_buffer_data[] = {
 	0.583f,  0.771f,  0.014f,
 	0.609f,  0.115f,  0.436f,
 	0.327f,  0.483f,  0.844f,
@@ -159,7 +181,22 @@ int main( void )
 	0.393f,  0.621f,  0.362f,
 	0.673f,  0.211f,  0.457f,
 	0.820f,  0.883f,  0.371f,
-	0.982f,  0.099f,  0.879f
+	0.982f,  0.099f,  0.879f,
+	//1.0f, 0.0f, 0.0f, // tr
+	//0.0f, 1.0f, 0.0f,
+	//0.0f, 0.0f, 1.0f,
+	};
+
+	static const GLfloat t_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+	};
+
+	static const GLfloat t_color_buffer_data[] = {
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
 	};
 
 	GLuint vertexbuffer;
@@ -171,6 +208,17 @@ int main( void )
 	glGenBuffers(1, &colorbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+
+	GLuint trBuffer;
+	glGenBuffers(1, &trBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, trBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(t_vertex_buffer_data), t_vertex_buffer_data, GL_STATIC_DRAW);
+
+	GLuint trColorbuffer;
+	glGenBuffers(1, &trColorbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, trColorbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(t_color_buffer_data), t_color_buffer_data, GL_STATIC_DRAW);
+
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -185,7 +233,6 @@ int main( void )
 		glUseProgram(programID);
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][1]);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -199,7 +246,11 @@ int main( void )
 		);
 
 		glEnableVertexAttribArray(1);
+		for (int i = 0; i < 12 * 3; ++i) {
+			g_color_buffer_data[i] = 1.0f;
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 		glVertexAttribPointer(
 			1,
 			3,
@@ -210,6 +261,32 @@ int main( void )
 		);
 
 		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &trMVP[0][0]);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, trBuffer);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0
+		);
+
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, trColorbuffer);
+		glVertexAttribPointer(
+			1,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0
+		);
+
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDisableVertexAttribArray(0);
 
 		// Swap buffers
