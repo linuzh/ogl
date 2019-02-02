@@ -12,6 +12,7 @@ GLFWwindow* window;
 //using namespace glm;
 
 #include <common/shader.hpp>
+#include <common/texture.hpp>
 
 int main( void )
 {
@@ -93,6 +94,45 @@ int main( void )
 	
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	
+	unsigned char header[54];
+	unsigned int dataPos;
+	unsigned int width, height;
+	unsigned int imageSize;
+	unsigned char * data;
+
+	FILE * file = fopen("dilek_000.bmp", "rb");
+	if (!file) {
+		printf("Image could not be opened\n");
+		return 0;
+	}
+	else {
+		printf("Otevrel jsem obrazek\n");
+	}
+	if (fread(header, 1, 54, file) != 54) {
+		printf("Not a correct BMP file\n");
+		return false;
+	}
+	else {
+		printf("Soubor je BMP\n");
+	}
+	if (header[0] != 'B' || header[1] != 'M') {
+		printf("Not correct BMP file\n");
+	}
+	else {
+		printf("Jde o spravny format obrazku BMP\n");
+	}
+	dataPos = *(int*)&(header[0x0A]);
+	imageSize = *(int*)&(header[0x22]);
+	width = *(int*)&(header[0x12]);
+	height = *(int*)&(header[0x16]);
+
+	if (imageSize == 0) imageSize = width * height * 3;
+	if (dataPos == 0) dataPos = 54;
+
+	data = new unsigned char[imageSize];
+	fread(data, 1, imageSize, file);
+	fclose(file);
+
 	static const GLfloat g_vertex_buffer_data[] = {
 //		-1.0f, -1.0f, 1.1f,
 //		0.0f, 1.5f, 1.1f,
