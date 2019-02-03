@@ -32,7 +32,7 @@ int main( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
+	window = glfwCreateWindow( 840, 460, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -72,14 +72,14 @@ int main( void )
 
 	glm::vec3 myRotationAxis(0.0f, -1.0f, 0.0f);
 
-	glm::mat4 myScalingMatrix = glm::scale(glm::vec3(1.5f, 1.5f, 1.5f));
+	glm::mat4 myScalingMatrix = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
 	glm::mat4 modelRotationMatrix = glm::rotate(glm::radians(45.0f), myRotationAxis);
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 trScale = glm::scale(glm::vec3(2.5f, 2.5f, 0.0f));
+	glm::mat4 trScale = glm::scale(glm::vec3(1.5f, 1.5f, 1.0f));
 	glm::mat4 trRotate = glm::rotate(glm::radians(45.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.1f));
 	
-	glm::vec3 cameraPosition(4.0f, 3.0f, -6.0f);
+	glm::vec3 cameraPosition(0.0f, 3.0f, -6.0f); // 4.0f
 	glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
 	glm::vec3 upVector(0.0f, 1.0f, 0.0f);
 	
@@ -183,15 +183,15 @@ int main( void )
 	//0.0f, 1.0f, 0.0f,
 	//1.0f, -1.0f, 0.0f,
 	};
-
-	static GLfloat g_color_buffer_data[12 * 3 * 3];
+	/*
+	static GLfloat zaloha_g_color_buffer_data[12 * 3 * 3];
 	for (int v = 0; v < 12 * 3; v++) {
 		g_color_buffer_data[3 * v + 0] = 0.15f;
 		g_color_buffer_data[3 * v + 1] = 0.15f;
 		g_color_buffer_data[3 * v + 2] = 0.15f;
 	}
-
-	static const GLfloat zaloha_g_color_buffer_data[] = {
+	*/
+	static const GLfloat g_color_buffer_data[] = {
 	0.583f,  0.771f,  0.014f,
 	0.609f,  0.115f,  0.436f,
 	0.327f,  0.483f,  0.844f,
@@ -271,7 +271,9 @@ int main( void )
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	GLuint Texture = loadBMP_custom("dilek_000.bmp");
+	//GLuint Texture = loadBMP_custom("dilek_000.bmp");
+
+
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -299,9 +301,9 @@ int main( void )
 		);
 
 		glEnableVertexAttribArray(1);
-		for (int i = 0; i < 12 * 3; ++i) {
+		/*for (int i = 0; i < 12 * 3; ++i) {
 			g_color_buffer_data[i] = 1.0f;
-		}
+		}*/
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 		glVertexAttribPointer(
