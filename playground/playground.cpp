@@ -133,6 +133,12 @@ int main( void )
 	fread(data, 1, imageSize, file);
 	fclose(file);
 
+	printf("dataPos: %i\n", dataPos);
+	printf("imageSize: %i\n", imageSize);
+	printf("width: %i\n", width);
+	printf("height: %i\n", height);
+	printf("data: %p\n", data);
+
 	static const GLfloat g_vertex_buffer_data[] = {
 //		-1.0f, -1.0f, 1.1f,
 //		0.0f, 1.5f, 1.1f,
@@ -259,6 +265,13 @@ int main( void )
 	glBindBuffer(GL_ARRAY_BUFFER, trColorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(t_color_buffer_data), t_color_buffer_data, GL_STATIC_DRAW);
 
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	GLuint Texture = loadBMP_custom("dilek_000.bmp");
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);

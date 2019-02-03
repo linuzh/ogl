@@ -2,14 +2,16 @@
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 vertexColor;
+//layout(location = 1) in vec3 vertexColor;
+layout(location = 1) in vec2 vertexUV;
 
 //mat4 myMatrix;
 //vec4 myVector;
 
 uniform mat4 MVP;
 
-out vec3 fragmentColor;
+//out vec3 fragmentColor;
+out vec2 UV;
 
 void main(){
 
@@ -19,6 +21,7 @@ void main(){
     //gl_Position.w = 1.0;
 	//gl_Position = MVP * gl_Position;
 	gl_Position = MVP * vec4(vertexPosition_modelspace, 1);
-	fragmentColor = vertexColor;
+	//fragmentColor = vertexColor;
+	UV = vertexUV;
 }
 
