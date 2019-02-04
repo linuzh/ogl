@@ -77,9 +77,9 @@ int main( void )
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 trScale = glm::scale(glm::vec3(1.5f, 1.5f, 1.0f));
 	glm::mat4 trRotate = glm::rotate(glm::radians(45.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.1f));
+	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.6f));
 	
-	glm::vec3 cameraPosition(0.0f, 3.0f, -6.0f); // 4.0f
+	glm::vec3 cameraPosition(0.0f, 3.0f, -10.0f); // 4.0f
 	glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
 	glm::vec3 upVector(0.0f, 1.0f, 0.0f);
 	
@@ -233,6 +233,12 @@ int main( void )
 	//0.0f, 0.0f, 1.0f,
 	};
 
+	static const GLfloat g_uv_buffer_data[] = {
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		0.5f, 0.5f
+	};
+
 	static const GLfloat t_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
@@ -244,6 +250,8 @@ int main( void )
 		0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 1.0f,
 	};
+
+
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
