@@ -1,368 +1,180 @@
+#include <GL/glew.h> // include GLEW and new version of GL on Windows
+#include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
-#include <stdlib.h>
 
-#include <GL/glew.h> // The OpenGL Extension Wrangler Library
+#include <assert.h>
+#include <time.h>
+#include <stdarg.h>
+constexpr auto GL_LOG_FILE = "gl.log";
 
-#include <GLFW/glfw3.h> // A library for OpenGL, window and input
-GLFWwindow* window;
+bool restart_gl_log() {
+	FILE* file = fopen(GL_LOG_FILE, "w");
+	if (!file) {
+		fprintf(stderr,
+			"ERROR: could not open GL_LOG_FILE log file %s for writing\n",
+			GL_LOG_FILE);
+		return false;
+	}
+	time_t now = time(NULL);
+	char* date = ctime(&now);
+	fprintf(file, "GL_LOG_FILE log. local time %s\n", date);
+	fclose(file);
+	return true;
+}
 
-#include <glm/glm.hpp> // 3D mathematics
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-//using namespace glm;
+bool gl_log(const char* message, ...) {
+	va_list argptr;
+	FILE* file = fopen(GL_LOG_FILE, "a");
+	if (!file) {
+		fprintf(
+			stderr,
+			"ERROR: could not open GL_LOG_FILE %s file for appending\n",
+			GL_LOG_FILE
+		);
+		return false;
+	}
+	va_start(argptr, message);
+	vfprintf(file, message, argptr);
+	va_end(argptr);
+	fclose(file);
+	return true;
+}
 
-#include <common/shader.hpp>
-#include <common/texture.hpp>
+bool gl_log_err(const char* message, ...) {
+	va_list argptr;
+	FILE* file = fopen(GL_LOG_FILE, "a");
+	if (!file) {
+		fprintf(stderr,
+			"ERROR: could not open GL_LOG_FILE %s file for appending\n",
+			GL_LOG_FILE);
+		return false;
+	}
+	va_start(argptr, message);
+	vfprintf(file, message, argptr);
+	va_end(argptr);
+	va_start(argptr, message);
+	vfprintf(stderr, message, argptr);
+	va_end(argptr);
+	fclose(file);
+	return true;
+}
 
-int main( void )
-{
-	// Initialise GLFW
-	if( !glfwInit() )
-	{
-		fprintf( stderr, "Failed to initialize GLFW\n" );
-		getchar();
-		return -1;
+void glfw_error_callback(int error, const char* description) {
+	gl_log_err("GLFW ERROR: code %i msg: %s\n", error, description);
+}
+
+int main() {
+	assert(restart_gl_log());
+	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
+	glfwSetErrorCallback(glfw_error_callback);
+	// start GL context and O/S window using the GLFW helper library
+	if (!glfwInit()) {
+		fprintf(stderr, "ERROR: could not start GLFW3\n");
+		return 1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	// uncomment these lines if on Apple OS X
+	/*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);*/
+	/*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);*/
 
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 840, 460, "Playground", NULL, NULL); // glfwGetPrimaryMonitor()
-	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
-		getchar();
+	GLFWmonitor* mon = glfwGetPrimaryMonitor();
+	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
+	GLFWwindow* window = glfwCreateWindow(
+		vmode->width, vmode->height, "Extended GL Init", mon, NULL
+	);
+
+	//GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	if (!window) {
+		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
 		glfwTerminate();
-		return -1;
+		return 1;
 	}
 	glfwMakeContextCurrent(window);
 
-	// Initialize GLEW
-	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
+	// start GLEW extension handler
+	glewExperimental = GL_TRUE;
+	glewInit();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	printf("%s\n", glGetString(GL_VERSION));
+	// get version info
+	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
+	const GLubyte* version = glGetString(GL_VERSION); // version as a string
+	printf("Renderer: %s\n", renderer);
+	printf("OpenGL version supported %s\n", version);
 
-	GLuint programID = LoadShaders("SimpleVertexShader.vert", "SimpleFragmentShader.frag");
+	// tell GL to only draw onto a pixel if the shape is closer to the viewer
+	glEnable(GL_DEPTH_TEST); // enable depth-testing
+	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
 
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
-	//glm::mat4 myMatrix = glm::translate(glm::mat4(), glm::vec3(10.0f, 0.0f, 0.0f));
-	//glm::vec4 myVector(10.0f, 10.0f, 10.0f, 0.0f);
-	//glm::vec4 transformedVector = myMatrix * myVector;
-	//glm::mat4 myIdentityMatrix = glm::mat4(1.0f);
-	//glm::mat4 myScaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
-	//glm::rotate(glm::radians(45.0), myRotationAxis);
-	//glm::mat4 rotationMatrix = glm::mat4(1.0f);
-	//glm::mat4 myRotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.0), glm::vec3(1.0f, 1.0f, 1.0f));
-	//glm::mat4 ViewMatrix = glm::translate(glm::mat4(), glm::vec3(-0.5f, 0.0f, 0.0f));
-	
-
-	glm::vec3 myRotationAxis(0.0f, -1.0f, 0.0f);
-
-	glm::mat4 myScalingMatrix = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-	glm::mat4 modelRotationMatrix = glm::rotate(glm::radians(45.0f), myRotationAxis);
-	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 trScale = glm::scale(glm::vec3(1.5f, 1.5f, 1.0f));
-	glm::mat4 trRotate = glm::rotate(glm::radians(45.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	glm::mat4 trTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.6f));
-	
-	glm::vec3 cameraPosition(0.0f, 3.0f, -10.0f); // 4.0f
-	glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
-	glm::vec3 upVector(0.0f, 1.0f, 0.0f);
-	
-	glm::mat4 cameraMatrix = glm::lookAt(cameraPosition, cameraTarget, upVector);
-	
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(49.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	//glm::mat4 projectionMatrix = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 100.0f);
-	
-	glm::mat4 MVP = projectionMatrix * cameraMatrix * modelMatrix * modelRotationMatrix * myScalingMatrix;
-	glm::mat4 trMVP = projectionMatrix * cameraMatrix * trTranslate * trRotate * trScale;
-	//glm::mat4 trMVP = projectionMatrix * cameraMatrix * modelMatrix * modelRotationMatrix * myScalingMatrix;
-	
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	
-	unsigned char header[54];
-	unsigned int dataPos;
-	unsigned int width, height;
-	unsigned int imageSize;
-	unsigned char * data;
-
-	FILE * file = fopen("dilek_000.bmp", "rb");
-	if (!file) {
-		printf("Image could not be opened\n");
-		return 0;
-	}
-	else {
-		printf("Otevrel jsem obrazek\n");
-	}
-	if (fread(header, 1, 54, file) != 54) {
-		printf("Not a correct BMP file\n");
-		return false;
-	}
-	else {
-		printf("Soubor je BMP\n");
-	}
-	if (header[0] != 'B' || header[1] != 'M') {
-		printf("Not correct BMP file\n");
-	}
-	else {
-		printf("Jde o spravny format obrazku BMP\n");
-	}
-	dataPos = *(int*)&(header[0x0A]);
-	imageSize = *(int*)&(header[0x22]);
-	width = *(int*)&(header[0x12]);
-	height = *(int*)&(header[0x16]);
-
-	if (imageSize == 0) imageSize = width * height * 3;
-	if (dataPos == 0) dataPos = 54;
-
-	data = new unsigned char[imageSize];
-	fread(data, 1, imageSize, file);
-	fclose(file);
-
-	printf("dataPos: %i\n", dataPos);
-	printf("imageSize: %i\n", imageSize);
-	printf("width: %i\n", width);
-	printf("height: %i\n", height);
-	printf("data: %p\n", data);
-
-	static const GLfloat g_vertex_buffer_data[] = {
-//		-1.0f, -1.0f, 1.1f,
-//		0.0f, 1.5f, 1.1f,
-//		1.0f, -1.0f, 1.1f,
-		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-	1.0f, 1.0f,-1.0f, // triangle 2 : begin
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	//-1.0f, -1.0f, 0.0f, // tr
-	//0.0f, 1.0f, 0.0f,
-	//1.0f, -1.0f, 0.0f,
-	};
-	/*
-	static GLfloat zaloha_g_color_buffer_data[12 * 3 * 3];
-	for (int v = 0; v < 12 * 3; v++) {
-		g_color_buffer_data[3 * v + 0] = 0.15f;
-		g_color_buffer_data[3 * v + 1] = 0.15f;
-		g_color_buffer_data[3 * v + 2] = 0.15f;
-	}
-	*/
-	static const GLfloat g_color_buffer_data[] = {
-	0.583f,  0.771f,  0.014f,
-	0.609f,  0.115f,  0.436f,
-	0.327f,  0.483f,  0.844f,
-	0.822f,  0.569f,  0.201f,
-	0.435f,  0.602f,  0.223f,
-	0.310f,  0.747f,  0.185f,
-	0.597f,  0.770f,  0.761f,
-	0.559f,  0.436f,  0.730f,
-	0.359f,  0.583f,  0.152f,
-	0.483f,  0.596f,  0.789f,
-	0.559f,  0.861f,  0.639f,
-	0.195f,  0.548f,  0.859f,
-	0.014f,  0.184f,  0.576f,
-	0.771f,  0.328f,  0.970f,
-	0.406f,  0.615f,  0.116f,
-	0.676f,  0.977f,  0.133f,
-	0.971f,  0.572f,  0.833f,
-	0.140f,  0.616f,  0.489f,
-	0.997f,  0.513f,  0.064f,
-	0.945f,  0.719f,  0.592f,
-	0.543f,  0.021f,  0.978f,
-	0.279f,  0.317f,  0.505f,
-	0.167f,  0.620f,  0.077f,
-	0.347f,  0.857f,  0.137f,
-	0.055f,  0.953f,  0.042f,
-	0.714f,  0.505f,  0.345f,
-	0.783f,  0.290f,  0.734f,
-	0.722f,  0.645f,  0.174f,
-	0.302f,  0.455f,  0.848f,
-	0.225f,  0.587f,  0.040f,
-	0.517f,  0.713f,  0.338f,
-	0.053f,  0.959f,  0.120f,
-	0.393f,  0.621f,  0.362f,
-	0.673f,  0.211f,  0.457f,
-	0.820f,  0.883f,  0.371f,
-	0.982f,  0.099f,  0.879f,
-	//1.0f, 0.0f, 0.0f, // tr
-	//0.0f, 1.0f, 0.0f,
-	//0.0f, 0.0f, 1.0f,
+	/* OTHER STUFF GOES HERE NEXT */
+	float points[] = {
+	   0.0f,  0.5f,  0.0f,
+	   0.5f, -0.5f,  0.0f,
+	  -0.5f, -0.5f,  0.0f
 	};
 
-	static const GLfloat g_uv_buffer_data[] = {
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		0.5f, 0.5f
-	};
+	GLuint vbo = 0;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW);
 
-	static const GLfloat t_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-	};
+	GLuint vao = 0;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	static const GLfloat t_color_buffer_data[] = {
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f,
-	};
+	const char* vertex_shader =
+		"#version 400\n"
+		"in vec3 vp;"
+		"void main() {"
+		"  gl_Position = vec4(vp.x, vp.y, vp.z, 1.0);"
+		"}";
 
+	const char* fragment_shader =
+		"#version 400\n"
+		"out vec4 frag_colour;"
+		"void main() {"
+		"  frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
+		"}";
 
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vertex_shader, NULL);
+	glCompileShader(vs);
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fragment_shader, NULL);
+	glCompileShader(fs);
 
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	GLuint shader_programme = glCreateProgram();
+	glAttachShader(shader_programme, fs);
+	glAttachShader(shader_programme, vs);
+	glLinkProgram(shader_programme);
 
-	GLuint colorbuffer;
-	glGenBuffers(1, &colorbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-
-	GLuint trBuffer;
-	glGenBuffers(1, &trBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, trBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(t_vertex_buffer_data), t_vertex_buffer_data, GL_STATIC_DRAW);
-
-	GLuint trColorbuffer;
-	glGenBuffers(1, &trColorbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, trColorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(t_color_buffer_data), t_color_buffer_data, GL_STATIC_DRAW);
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//GLuint Texture = loadBMP_custom("dilek_000.bmp");
-
-
-
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-	// Dark gray background
-	glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-
-	do{
+	while (!glfwWindowShouldClose(window)) {
+		// wipe the drawing surface clear
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Draw nothing, see you in tutorial 2 !
-		glUseProgram(programID);
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0
-		);
-
-		glEnableVertexAttribArray(1);
-		/*for (int i = 0; i < 12 * 3; ++i) {
-			g_color_buffer_data[i] = 1.0f;
-		}*/
-		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-		glVertexAttribPointer(
-			1,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0
-		);
-
-		glDrawArrays(GL_TRIANGLES, 0, 12*3);
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &trMVP[0][0]);
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, trBuffer);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0
-		);
-
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, trColorbuffer);
-		glVertexAttribPointer(
-			1,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0
-		);
-
-
+		glUseProgram(shader_programme);
+		glBindVertexArray(vao);
+		// draw points 0-3 from the currently bound VAO with current in-use shader
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDisableVertexAttribArray(0);
-
-		// Swap buffers
-		glfwSwapBuffers(window);
+		// update other events like input handling 
 		glfwPollEvents();
+		// put the stuff we've been drawing onto the display
+		glfwSwapBuffers(window);
 
-	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose(window, 1);
+		}
+	}
 
-	// Close OpenGL window and terminate GLFW
+	// close GL context and any other GLFW resources
 	glfwTerminate();
-
 	return 0;
 }
-
