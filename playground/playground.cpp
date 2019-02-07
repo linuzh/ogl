@@ -1,3 +1,4 @@
+// http://antongerdelan.net/opengl/hellotriangle.html
 #include <GL/glew.h> // include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
@@ -63,6 +64,54 @@ void glfw_error_callback(int error, const char* description) {
 	gl_log_err("GLFW ERROR: code %i msg: %s\n", error, description);
 }
 
+void log_gl_params() {
+	GLenum params[] = {
+	  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+	  GL_MAX_CUBE_MAP_TEXTURE_SIZE,
+	  GL_MAX_DRAW_BUFFERS,
+	  GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
+	  GL_MAX_TEXTURE_IMAGE_UNITS,
+	  GL_MAX_TEXTURE_SIZE,
+	  GL_MAX_VARYING_FLOATS,
+	  GL_MAX_VERTEX_ATTRIBS,
+	  GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+	  GL_MAX_VERTEX_UNIFORM_COMPONENTS,
+	  GL_MAX_VIEWPORT_DIMS,
+	  GL_STEREO,
+	};
+	const char* names[] = {
+	  "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS",
+	  "GL_MAX_CUBE_MAP_TEXTURE_SIZE",
+	  "GL_MAX_DRAW_BUFFERS",
+	  "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS",
+	  "GL_MAX_TEXTURE_IMAGE_UNITS",
+	  "GL_MAX_TEXTURE_SIZE",
+	  "GL_MAX_VARYING_FLOATS",
+	  "GL_MAX_VERTEX_ATTRIBS",
+	  "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS",
+	  "GL_MAX_VERTEX_UNIFORM_COMPONENTS",
+	  "GL_MAX_VIEWPORT_DIMS",
+	  "GL_STEREO",
+	};
+	gl_log("GL Context Params:\n");
+	char msg[256];
+	// integers - only works if the order is 0-10 integer return types
+	for (int i = 0; i < 10; i++) {
+		int v = 0;
+		glGetIntegerv(params[i], &v);
+		gl_log("%s %i\n", names[i], v);
+	}
+	// others
+	int v[2];
+	v[0] = v[1] = 0;
+	glGetIntegerv(params[10], v);
+	gl_log("%s %i %i\n", names[10], v[0], v[1]);
+	unsigned char s = 0;
+	glGetBooleanv(params[11], &s);
+	gl_log("%s %u\n", names[11], (unsigned int)s);
+	gl_log("-----------------------------\n");
+}
+
 int main() {
 	assert(restart_gl_log());
 	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
@@ -84,13 +133,13 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);*/
 
-	GLFWmonitor* mon = glfwGetPrimaryMonitor();
+	/*GLFWmonitor* mon = glfwGetPrimaryMonitor();
 	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
 	GLFWwindow* window = glfwCreateWindow(
 		vmode->width, vmode->height, "Extended GL Init", mon, NULL
-	);
+	);*/
 
-	//GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!window) {
 		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
 		glfwTerminate();
@@ -113,6 +162,9 @@ int main() {
 	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
 
 	/* OTHER STUFF GOES HERE NEXT */
+
+	log_gl_params();
+
 	float points[] = {
 	   0.0f,  0.5f,  0.0f,
 	   0.5f, -0.5f,  0.0f,
