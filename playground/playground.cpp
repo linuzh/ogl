@@ -112,6 +112,22 @@ void log_gl_params() {
 	gl_log("-----------------------------\n");
 }
 
+void _update_fps_counter(GLFWwindow* window) {
+	static double previous_seconds = glfwGetTime();
+	static int frame_count;
+	double current_seconds = glfwGetTime();
+	double elapsed_seconds = current_seconds - previous_seconds;
+	if (elapsed_seconds > 0.25) {
+		previous_seconds = current_seconds;
+		double fps = (double)frame_count / elapsed_seconds;
+		char tmp[128];
+		sprintf(tmp, "opengl @ fps: %.2f", fps);
+		glfwSetWindowTitle(window, tmp);
+		frame_count = 0;
+	}
+	frame_count++;
+}
+
 int main() {
 	assert(restart_gl_log());
 	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
@@ -130,8 +146,8 @@ int main() {
 	/*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 4);*/
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);*/
+	glfwWindowHint(GLFW_SAMPLES, 8);
 
 	/*GLFWmonitor* mon = glfwGetPrimaryMonitor();
 	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
@@ -168,13 +184,16 @@ int main() {
 	float points[] = {
 	   0.0f,  0.5f,  0.0f,
 	   0.5f, -0.5f,  0.0f,
-	  -0.5f, -0.5f,  0.0f
+	   0.5f, -0.5f,  0.0f,
+	  -0.5f, -0.5f,  0.0f,
+	  -0.5f, -0.5f,  0.0f,
+	   0.0f,  0.5f,  0.0f
 	};
 
 	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
 	GLuint vao = 0;
 	glGenVertexArrays(1, &vao);
@@ -210,12 +229,13 @@ int main() {
 	glLinkProgram(shader_programme);
 
 	while (!glfwWindowShouldClose(window)) {
+		_update_fps_counter(window);
 		// wipe the drawing surface clear
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_programme);
 		glBindVertexArray(vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_LINES, 0, 6);
 		// update other events like input handling 
 		glfwPollEvents();
 		// put the stuff we've been drawing onto the display
