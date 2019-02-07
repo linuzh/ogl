@@ -94,7 +94,7 @@ void log_gl_params() {
 	  "GL_STEREO",
 	};
 	gl_log("GL Context Params:\n");
-	char msg[256];
+	//char msg[256];
 	// integers - only works if the order is 0-10 integer return types
 	for (int i = 0; i < 10; i++) {
 		int v = 0;
@@ -148,8 +148,8 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);*/
 	glfwWindowHint(GLFW_SAMPLES, 8);
-
-	/*GLFWmonitor* mon = glfwGetPrimaryMonitor();
+	/*
+	GLFWmonitor* mon = glfwGetPrimaryMonitor();
 	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
 	GLFWwindow* window = glfwCreateWindow(
 		vmode->width, vmode->height, "Extended GL Init", mon, NULL
@@ -182,12 +182,22 @@ int main() {
 	log_gl_params();
 
 	float points[] = {
-	   0.0f,  0.5f,  0.0f,
+	  -0.5f, -0.5f,  0.0f, // dolni
 	   0.5f, -0.5f,  0.0f,
-	   0.5f, -0.5f,  0.0f,
+	   0.5f, -0.5f,  0.0f, // prava
+	   0.5f,  0.5f,  0.0f,
+	   0.5f,  0.5f,  0.0f, // horni
+	  -0.5f,  0.5f,  0.0f,
+	  -0.5f,  0.5f,  0.0f, // leva
 	  -0.5f, -0.5f,  0.0f,
-	  -0.5f, -0.5f,  0.0f,
-	   0.0f,  0.5f,  0.0f
+	  -0.5f, -0.5f,  0.0f, // leva dolni
+	   0.0f,  0.0f,  0.0f,
+	   0.5f, -0.5f,  0.0f, // prava dolni 
+	   0.0f,  0.0f,  0.0f,
+	  -0.5f,  0.5f,  0.0f, // leva horni
+	   0.0f,  0.0f,  0.0f,
+	   0.5f,  0.5f,  0.0f, // prava horni
+	   0.0f,  0.0f,  0.0f,
 	};
 
 	GLuint vbo = 0;
@@ -213,7 +223,7 @@ int main() {
 		"#version 400\n"
 		"out vec4 frag_colour;"
 		"void main() {"
-		"  frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
+		"  frag_colour = vec4(1.0, 1.0, 1.0, 1.0);"
 		"}";
 
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -235,7 +245,7 @@ int main() {
 		glUseProgram(shader_programme);
 		glBindVertexArray(vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays(GL_LINES, 0, 6);
+		glDrawArrays(GL_LINES, 0, 16);
 		// update other events like input handling 
 		glfwPollEvents();
 		// put the stuff we've been drawing onto the display
