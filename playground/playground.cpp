@@ -182,6 +182,22 @@ int main() {
 	log_gl_params();
 
 	float points[] = {
+	   0.0f,  0.0f,  0.0f, // stred
+	  -0.5f, -0.5f,  0.0f, // leva dolni
+	  -0.5f,  0.5f,  0.0f, // leva horni
+	   0.5f,  0.5f,  0.0f, // prava horni
+	   0.5f, -0.5f,  0.0f, // prava dolni
+	  -0.5f, -0.5f,  0.0f, // leva dolni
+	};
+	float colours[] = {
+	   1.0f,  1.0f,  1.0f,
+	   1.0f,  0.0f,  0.0f,
+	   0.0f,  1.0f,  0.0f,
+	   0.0f,  0.0f,  1.0f,
+	   1.0f,  0.0f,  1.0f,
+	   1.0f,  0.0f,  0.0f,
+	};
+	float points_zaloha[] = {
 	  -0.5f, -0.5f,  0.0f, // dolni
 	   0.5f, -0.5f,  0.0f,
 	   0.5f, -0.5f,  0.0f, // prava
@@ -205,25 +221,39 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
+	GLuint colours_vbo = 0;
+	glGenBuffers(1, &colours_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, colours_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colours), colours, GL_STATIC_DRAW);
+
 	GLuint vao = 0;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	glEnableVertexAttribArray(0);
+	//glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, colours_vbo);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 	const char* vertex_shader =
 		"#version 400\n"
-		"in vec3 vp;"
+		"layout(location = 0) in vec3 vertex_position;"
+		"layout(location = 1) in vec3 vertex_colour;"
+		"out vec3 colour;"
 		"void main() {"
-		"  gl_Position = vec4(vp.x, vp.y, vp.z, 1.0);"
+		"  colour = vertex_colour;"
+		"  gl_Position = vec4(vertex_position, 1.0);"
 		"}";
 
 	const char* fragment_shader =
 		"#version 400\n"
+		"in vec3 colour;"
 		"out vec4 frag_colour;"
 		"void main() {"
-		"  frag_colour = vec4(1.0, 1.0, 1.0, 1.0);"
+		"  frag_colour = vec4(colour, 1.0);"
 		"}";
 
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -236,7 +266,13 @@ int main() {
 	GLuint shader_programme = glCreateProgram();
 	glAttachShader(shader_programme, fs);
 	glAttachShader(shader_programme, vs);
+
+	glBindAttribLocation(shader_programme, 0, "vertex_position");
+	glBindAttribLocation(shader_programme, 1, "vertex_colour");
+
 	glLinkProgram(shader_programme);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // GL_FRONT_AND_BACK
 
 	while (!glfwWindowShouldClose(window)) {
 		_update_fps_counter(window);
@@ -245,7 +281,7 @@ int main() {
 		glUseProgram(shader_programme);
 		glBindVertexArray(vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays(GL_LINES, 0, 16);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 		// update other events like input handling 
 		glfwPollEvents();
 		// put the stuff we've been drawing onto the display
