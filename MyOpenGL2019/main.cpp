@@ -1,12 +1,12 @@
 // Vložení knihoven
 #pragma comment (lib,"opengl32.lib")
 #pragma comment (lib,"glu32.lib")
-#pragma comment (lib,"glaux.lib")
+//#pragma comment (lib,"glaux.lib")
 
 #include <windows.h>// Hlavièkový soubor pro Windows
 #include <gl\gl.h>// Hlavièkový soubor pro OpenGL32 knihovnu
 #include <gl\glu.h>// Hlavièkový soubor pro Glu32 knihovnu
-#include "include\glaux.h"// Hlavièkový soubor pro Glaux knihovnu
+//#include "include\glaux.h"// Hlavièkový soubor pro Glaux knihovnu
 
 HDC hDC = NULL;// Privátní GDI Device Context
 HGLRC hRC = NULL;// Trvalý Rendering Context
@@ -86,7 +86,7 @@ GLvoid KillGLWindow(GLvoid)// Zavírání okna
 	}
 }
 
-BOOL CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag)
+BOOL CreateGLWindow(const char* title, int width, int height, int bits, bool fullscreenflag)
 {
 	GLuint PixelFormat;// Ukládá formát pixelù
 	WNDCLASS wc;// Struktura Windows Class
