@@ -47,6 +47,20 @@ int DrawGLScene(GLvoid)// Vykreslování
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Smaže obrazovku a hloubkový buffer
 	glLoadIdentity();// Reset matice
 	// Sem mùžete kreslit
+	glTranslatef(-1.5f, 0.0f, -6.0f);// Posun doleva a do hloubky
+	glBegin(GL_TRIANGLES);// Zaèátek kreslení trojúhelníkù
+	glVertex3f(0.0f, 1.0f, 0.0f);// Horní bod
+	glVertex3f(-1.0f, -1.0f, 0.0f);// Levý dolní bod
+	glVertex3f(1.0f, -1.0f, 0.0f);// Pravý dolní bod
+	glEnd();// Ukonèení kreslení trojúhelníkù
+	glTranslatef(3.0f, 0.0f, 0.0f);// Posun o 3 jednotky doprava
+	glBegin(GL_QUADS);// Zaèátek kreslení obdélníkù
+	glVertex3f(-1.0f, 1.0f, 0.0f);// Levý horní bod
+	glVertex3f(1.0f, 1.0f, 0.0f);// Pravý horní bod
+	glVertex3f(1.0f, -1.0f, 0.0f);// Pravý dolní bod
+	glVertex3f(-1.0f, -1.0f, 0.0f);// Levý dolní bod
+	glEnd();// Konec kreslení obdélníkù
+
 	return TRUE;// Vykreslení probìhlo v poøádku
 }
 
