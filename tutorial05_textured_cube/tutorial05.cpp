@@ -64,7 +64,7 @@ int main( void )
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
+	GLuint programID = LoadShaders( "TransformVertexShader.vs", "TextureFragmentShader.fs" );
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -83,8 +83,8 @@ int main( void )
 	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
 	// Load the texture using any two methods
-	//GLuint Texture = loadBMP_custom("uvtemplate.bmp");
-	GLuint Texture = loadDDS("uvtemplate.DDS");
+	GLuint Texture = loadBMP_custom("dilky_mapa.bmp");
+	//GLuint Texture = loadDDS("uvtemplate.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
 	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
@@ -131,7 +131,7 @@ int main( void )
 	};
 
 	// Two UV coordinatesfor each vertex. They were created with Blender.
-	static const GLfloat g_uv_buffer_data[] = { 
+	static const GLfloat g_uv_buffer_data_zaloha[] = { 
 		0.000059f, 1.0f-0.000004f, 
 		0.000103f, 1.0f-0.336048f, 
 		0.335973f, 1.0f-0.335903f, 
@@ -168,6 +168,44 @@ int main( void )
 		0.667969f, 1.0f-0.671889f, 
 		1.000004f, 1.0f-0.671847f, 
 		0.667979f, 1.0f-0.335851f
+	};
+	static const GLfloat g_uv_buffer_data[] = {
+		0.199975f, 1.0f - 0.000008f,
+		0.199975f, 1.0f - 0.199952f,
+		0.000015f, 1.0f - 0.199952f,
+		0.000015f, 1.0f - 0.000008f,
+		0.199975f, 1.0f - 0.399912f,
+		0.000015f, 1.0f - 0.399912f,
+		0.199975f, 1.0f - 0.599872f,
+		0.000015f, 1.0f - 0.599872f,
+		0.399935f, 1.0f - 0.399912f,
+		0.399935f, 1.0f - 0.599872f,
+		0.399935f, 1.0f - 0.199952f,
+		0.399935f, 1.0f - 0.000008f,
+		0.599895f, 1.0f - 0.399912f,
+		0.599895f, 1.0f - 0.599872f,
+		0.599895f, 1.0f - 0.199952f,
+		0.599895f, 1.0f - 0.000008f,
+		0.799855f, 1.0f - 0.399912f,
+		0.799855f, 1.0f - 0.599872f,
+		0.799855f, 1.0f - 0.199952f,
+		0.799855f, 1.0f - 0.000008f,
+		0.999815f, 1.0f - 0.399912f,
+		0.999815f, 1.0f - 0.599872f,
+		0.999815f, 1.0f - 0.199952f,
+		0.999815f, 1.0f - 0.000008f,
+		0.399935f, 1.0f - 0.799832f,
+		0.199975f, 1.0f - 0.799832f,
+		0.000015f, 1.0f - 0.799832f,
+		0.599895f, 1.0f - 0.799832f,
+		0.799855f, 1.0f - 0.799832f,
+		0.999815f, 1.0f - 0.799832f,
+		0.599895f, 1.0f - 0.999792f,
+		0.399935f, 1.0f - 0.999792f,
+		0.199975f, 1.0f - 0.999792f,
+		0.000015f, 1.0f - 0.999792f,
+		0.999815f, 1.0f - 0.999792f,
+		0.799855f, 1.0f - 0.999792f,
 	};
 
 	GLuint vertexbuffer;
