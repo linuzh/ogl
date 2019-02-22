@@ -64,7 +64,7 @@ int main( void )
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "TransformVertexShader.vs", "TextureFragmentShader.fs" );
+	GLuint programID = LoadShaders( "TransformVertexShader.vert", "TextureFragmentShader.frag" );
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -83,7 +83,7 @@ int main( void )
 	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
 	// Load the texture using any two methods
-	GLuint Texture = loadBMP_custom("dilky_mapa.bmp");
+	GLuint Texture = loadBMP_custom("dilek_000.bmp");
 	//GLuint Texture = loadDDS("uvtemplate.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
@@ -92,120 +92,34 @@ int main( void )
 	// Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
 	static const GLfloat g_vertex_buffer_data[] = { 
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f
+		 0.0f,  0.0f, -1.0f, // south
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 0.0f,  0.0f, -1.0f, // west
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		 0.0f,  0.0f, -1.0f, // nord
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		 0.0f,  0.0f, -1.0f, // east
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
 	};
 
 	// Two UV coordinatesfor each vertex. They were created with Blender.
-	static const GLfloat g_uv_buffer_data_zaloha[] = { 
-		0.000059f, 1.0f-0.000004f, 
-		0.000103f, 1.0f-0.336048f, 
-		0.335973f, 1.0f-0.335903f, 
-		1.000023f, 1.0f-0.000013f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.999958f, 1.0f-0.336064f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.336024f, 1.0f-0.671877f, 
-		0.667969f, 1.0f-0.671889f, 
-		1.000023f, 1.0f-0.000013f, 
-		0.668104f, 1.0f-0.000013f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.000059f, 1.0f-0.000004f, 
-		0.335973f, 1.0f-0.335903f, 
-		0.336098f, 1.0f-0.000071f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.335973f, 1.0f-0.335903f, 
-		0.336024f, 1.0f-0.671877f, 
-		1.000004f, 1.0f-0.671847f, 
-		0.999958f, 1.0f-0.336064f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.668104f, 1.0f-0.000013f, 
-		0.335973f, 1.0f-0.335903f, 
-		0.667979f, 1.0f-0.335851f, 
-		0.335973f, 1.0f-0.335903f, 
-		0.668104f, 1.0f-0.000013f, 
-		0.336098f, 1.0f-0.000071f, 
-		0.000103f, 1.0f-0.336048f, 
-		0.000004f, 1.0f-0.671870f, 
-		0.336024f, 1.0f-0.671877f, 
-		0.000103f, 1.0f-0.336048f, 
-		0.336024f, 1.0f-0.671877f, 
-		0.335973f, 1.0f-0.335903f, 
-		0.667969f, 1.0f-0.671889f, 
-		1.000004f, 1.0f-0.671847f, 
-		0.667979f, 1.0f-0.335851f
-	};
 	static const GLfloat g_uv_buffer_data[] = {
-		0.199975f, 1.0f - 0.000008f,
-		0.199975f, 1.0f - 0.199952f,
-		0.000015f, 1.0f - 0.199952f,
-		0.000015f, 1.0f - 0.000008f,
-		0.199975f, 1.0f - 0.399912f,
-		0.000015f, 1.0f - 0.399912f,
-		0.199975f, 1.0f - 0.599872f,
-		0.000015f, 1.0f - 0.599872f,
-		0.399935f, 1.0f - 0.399912f,
-		0.399935f, 1.0f - 0.599872f,
-		0.399935f, 1.0f - 0.199952f,
-		0.399935f, 1.0f - 0.000008f,
-		0.599895f, 1.0f - 0.399912f,
-		0.599895f, 1.0f - 0.599872f,
-		0.599895f, 1.0f - 0.199952f,
-		0.599895f, 1.0f - 0.000008f,
-		0.799855f, 1.0f - 0.399912f,
-		0.799855f, 1.0f - 0.599872f,
-		0.799855f, 1.0f - 0.199952f,
-		0.799855f, 1.0f - 0.000008f,
-		0.999815f, 1.0f - 0.399912f,
-		0.999815f, 1.0f - 0.599872f,
-		0.999815f, 1.0f - 0.199952f,
-		0.999815f, 1.0f - 0.000008f,
-		0.399935f, 1.0f - 0.799832f,
-		0.199975f, 1.0f - 0.799832f,
-		0.000015f, 1.0f - 0.799832f,
-		0.599895f, 1.0f - 0.799832f,
-		0.799855f, 1.0f - 0.799832f,
-		0.999815f, 1.0f - 0.799832f,
-		0.599895f, 1.0f - 0.999792f,
-		0.399935f, 1.0f - 0.999792f,
-		0.199975f, 1.0f - 0.999792f,
-		0.000015f, 1.0f - 0.999792f,
-		0.999815f, 1.0f - 0.999792f,
-		0.799855f, 1.0f - 0.999792f,
+		0.500000f, 0.500008f, // south
+		0.000100f, 0.000100f,
+		0.999900f, 0.000100f,
+		0.500000f, 0.500000f, // west
+		0.000100f, 0.000100f,
+		0.000100f, 0.999900f,
+		0.500000f, 0.500000f, // nord
+		0.999900f, 0.999900f,
+		0.000100f, 0.999900f,
+		0.500000f, 0.500000f, // east
+		0.999900f, 0.000100f,
+		0.999900f, 0.999900f,
 	};
 
 	GLuint vertexbuffer;
@@ -261,7 +175,7 @@ int main( void )
 		);
 
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
+		glDrawArrays(GL_TRIANGLES, 0, 4*3); // 12*3 indices starting at 0 -> 12 triangles
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
